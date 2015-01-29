@@ -1,5 +1,5 @@
 [package]
 
-name = "pipes"
+name = "taskpipe"
 version = "0.0.1"
 authors = ["Eric Mrak <mail@ericmrak.info>"]
