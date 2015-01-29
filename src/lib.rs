@@ -5,42 +5,40 @@ pub struct TaskPipe<T: Send> {
     outlet: Receiver<T>
 }
 
+pub fn tap<T: Send, F: FnOnce(&Sender<T>)+Send>(task: F) -> TaskPipe<T> {
+    let (tx, rx) = channel();
+
+    Thread::spawn(move || {
+        task(&tx);
+    });
+
+    TaskPipe { outlet: rx }
+}
+
 impl<T: Send> TaskPipe<T> {
-    pub fn tap<F: FnOnce(&mut Sender<T>)+Send>(task: F) -> TaskPipe<T> {
-        let (mut tx, rx) = channel();
+    pub fn pipe<S: Send, F: FnOnce(Receiver<T>, Sender<S>)+Send>(self, task: F) -> TaskPipe<S> {
+        let (tx, rx) = channel();
 
         Thread::spawn(move || {
-            task(&mut tx);
+            task(self.outlet, tx);
         });
 
         TaskPipe { outlet: rx }
     }
 
-    pub fn pipe<F: FnOnce(&mut Receiver<T>, &mut Sender<T>)+Send>(mut self, task: F) -> TaskPipe<T> {
-        let (mut tx, rx) = channel();
-
-        Thread::spawn(move || {
-            task(&mut self.outlet, &mut tx);
-        });
-
-        TaskPipe { outlet: rx }
-    }
-
-    pub fn drain<F: FnOnce(&mut Receiver<T>)+Send>(mut self, task: F) {
-        Thread::spawn(move || {
-            task(&mut self.outlet);
+    pub fn drain<F: FnOnce(Receiver<T>)+Send>(self, task: F) {
+        Thread::scoped(move || {
+            task(self.outlet);
         });
     }
 }
 
-pub fn pump<T: Send>(rx: &Receiver<T>, tx: &Sender<T>) {
-    let tx2 = tx.clone();
+pub fn pump<T: Send>(rx: Receiver<T>, tx: &Sender<T>) {
+    let mut tx2 = tx.clone();
+
     Thread::spawn(move || {
         for message in rx.iter() {
-            match tx2.send(message) {
-                Err(_) => return,
-                Ok(_) => continue
-            }
-        }
+            tx2.send(message);
+        };
     });
 }
