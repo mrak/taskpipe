@@ -31,13 +31,13 @@ impl Pipe {
         };
     }
 
-    fn pipe(&self, transform: Box<Fn(&mut ChanReader, &mut ChanWriter)+Send>) -> Pipe {
+    fn pipe<F: FnOnce(&mut ChanReader, &mut ChanWriter)+Send>(mut self, transform: F) -> Pipe {
         let (tx, rx) = channel();
         let reader = ChanReader::new(rx);
         let mut writer = ChanWriter::new(tx);
 
         Thread::spawn(move || {
-            transform(&self.incoming, &writer);
+            transform(&mut self.incoming, &mut writer);
         });
 
         Pipe { incoming: reader }
