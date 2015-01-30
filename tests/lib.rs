@@ -1,17 +1,16 @@
 extern crate taskpipe;
 
-use taskpipe::source;
 use std::sync::mpsc::{Receiver,Sender};
 
 #[test]
 fn it_works() {
-    source(|tx: Sender<char>| {
+    taskpipe::input(|tx: Sender<char>| {
         for c in "0123456789abcd".chars() {
             tx.send(c);
         }
-    }).source(|tx: Sender<char>| {
+    }).input(|tx: Sender<char>| {
         tx.send('f');
-    }).source(|tx: Sender<char>| {
+    }).input(|tx: Sender<char>| {
         tx.send('e');
     }).pipe(|rx: Receiver<char>, tx: Sender<usize>| {
         for c in rx.iter() {
@@ -29,7 +28,7 @@ fn it_works() {
                 tx.send(false);
             }
         }
-    }).drain(|rx: Receiver<bool>| {
+    }).output(|rx: Receiver<bool>| {
         for c in rx.iter() {
             print!("{} ", c);
         }

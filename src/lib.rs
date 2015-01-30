@@ -5,7 +5,7 @@ pub struct TaskPipe<T: Send> {
     rx: Receiver<T>
 }
 
-pub fn source<T: Send, F: FnOnce(Sender<T>)+Send>(task: F) -> TaskPipe<T> {
+pub fn input<T: Send, F: FnOnce(Sender<T>)+Send>(task: F) -> TaskPipe<T> {
     let (tx, rx) = channel();
 
     Thread::spawn(move || {
@@ -16,7 +16,7 @@ pub fn source<T: Send, F: FnOnce(Sender<T>)+Send>(task: F) -> TaskPipe<T> {
 }
 
 impl<T: Send> TaskPipe<T> {
-    pub fn source<F: FnOnce(Sender<T>)+Send>(self, task: F) -> TaskPipe<T> {
+    pub fn input<F: FnOnce(Sender<T>)+Send>(self, task: F) -> TaskPipe<T> {
         let (tx, rx) = channel();
         let mut tx2 = tx.clone();
 
@@ -42,7 +42,7 @@ impl<T: Send> TaskPipe<T> {
         TaskPipe { rx: rx }
     }
 
-    pub fn drain<F: FnOnce(Receiver<T>)+Send>(self, task: F) {
+    pub fn output<F: FnOnce(Receiver<T>)+Send>(self, task: F) {
         Thread::scoped(move || {
             task(self.rx);
         });
