@@ -3,3 +3,9 @@
 name = "taskpipe"
 version = "0.0.1"
 authors = ["Eric Mrak <mail@ericmrak.info>"]
+description = "A simple, multithreaded pipeline library"
+homepage = "https://github.com/mrak/taskpipe"
+repository = "https://github.com/mrak/taskpipe.git"
+readme = "README.md"
+license = "MIT"
+keywords = ["concurrency","multithreaded","pipe","channel"]
