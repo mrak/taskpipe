@@ -56,7 +56,7 @@ impl<T: Send> TaskPipe<T> {
     /// ```
     pub fn input<F: FnOnce(Sender<T>)+Send>(self, task: F) -> TaskPipe<T> {
         let (tx, rx) = channel();
-        let mut tx2 = tx.clone();
+        let tx2 = tx.clone();
 
         Thread::spawn(move || {
             for message in self.rx.iter() {
