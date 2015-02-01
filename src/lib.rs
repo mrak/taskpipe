@@ -20,9 +20,11 @@ pub struct TaskPipe<T: Send> {
 /// will be used to feed the rest of the pipeline.
 ///
 /// ```
+/// use std::sync::mpsc::Sender;
+///
 /// taskpipe::input(|tx: Sender<char>| {
 ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() {
-///         tx.send(c);
+///         tx.send(c).unwrap();
 ///     }
 /// });
 /// ```
@@ -44,10 +46,12 @@ impl<T: Send> TaskPipe<T> {
     /// downstream tasks.
     ///
     /// ```
+    /// use std::sync::mpsc::Sender;
+    ///
     /// taskpipe::input(|tx: Sender<char>| {
-    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
+    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c).unwrap(); }
     /// }).input(|tx: Sender<char>| {
-    ///     for c in "0123456789".chars() { tx.send(c); }
+    ///     for c in "0123456789".chars() { tx.send(c).unwrap(); }
     /// });
     /// ```
     pub fn input<F: FnOnce(Sender<T>)+Send>(self, task: F) -> TaskPipe<T> {
@@ -72,11 +76,13 @@ impl<T: Send> TaskPipe<T> {
     /// downstream tasks.
     ///
     /// ```
+    /// use std::sync::mpsc::{Receiver,Sender};
+    ///
     /// taskpipe::input(|tx: Sender<char>| {
-    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
-    /// }).pipe(|rx: Receiver<usize>, tx: Sender<bool>| {
+    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c).unwrap(); }
+    /// }).pipe(|rx: Receiver<char>, tx: Sender<bool>| {
     ///     for c in rx.iter() {
-    ///         tx.send(c.is_uppercase());
+    ///         tx.send(c.is_uppercase()).unwrap();
     ///     }
     /// });
     /// ```
@@ -97,9 +103,11 @@ impl<T: Send> TaskPipe<T> {
     /// pipeline.
     ///
     /// ```
+    /// use std::sync::mpsc::{Receiver,Sender};
+    ///
     /// taskpipe::input(|tx: Sender<char>| {
-    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
-    /// }).output(|tx: Sender<char>| {
+    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c).unwrap(); }
+    /// }).end(|rx: Receiver<char>| {
     ///     for c in rx.iter() {
     ///         print!("{} ", c);
     ///     }
@@ -117,9 +125,11 @@ impl<T: Send> TaskPipe<T> {
     /// spawning a sub-process.
     ///
     /// ```
+    /// use std::sync::mpsc::{Sender,Receiver};
+    ///
     /// taskpipe::input(|tx: Sender<char>| {
-    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
-    /// }).join(|tx: Sender<char>| {
+    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c).unwrap(); }
+    /// }).join(|rx: Receiver<char>| {
     ///     for c in rx.iter() {
     ///         print!("{} ", c);
     ///     }
