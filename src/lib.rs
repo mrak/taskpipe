@@ -18,6 +18,7 @@ pub struct TaskPipe<T: Send> {
 ///
 /// This is intended for the beginning of a task pipeline. The supplied function
 /// will be used to feed the rest of the pipeline.
+///
 /// ```
 /// taskpipe::input(|tx: Sender<char>| {
 ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() {
@@ -41,6 +42,7 @@ impl<T: Send> TaskPipe<T> {
     /// Items from the previous task will be passed through to the next task.
     /// Items produced by the given function will also be received by
     /// downstream tasks.
+    ///
     /// ```
     /// taskpipe::input(|tx: Sender<char>| {
     ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
@@ -68,6 +70,7 @@ impl<T: Send> TaskPipe<T> {
     ///
     /// Received upstream task items, process them, and pass them along to
     /// downstream tasks.
+    ///
     /// ```
     /// taskpipe::input(|tx: Sender<char>| {
     ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
@@ -92,6 +95,7 @@ impl<T: Send> TaskPipe<T> {
     /// This method dispatches and joins the final task to the parent's thread,
     /// while receiving any items that have made their way through the entire
     /// pipeline.
+    ///
     /// ```
     /// taskpipe::input(|tx: Sender<char>| {
     ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
@@ -111,6 +115,7 @@ impl<T: Send> TaskPipe<T> {
     ///
     /// This method executes it's closure in the current thread without
     /// spawning a sub-process.
+    ///
     /// ```
     /// taskpipe::input(|tx: Sender<char>| {
     ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
