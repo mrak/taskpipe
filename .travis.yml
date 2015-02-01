@@ -1,10 +1,12 @@
+language: rust
 env:
   global:
-    - secure: ErMcr2VBkm8MlVg17TFDve8478AE3EOnr9FCV4LV43EHMKvy2QfI+kin9MEZ0iO/kI+ZYG2KM1MZkCEMNc7Yzk9hxrROYGUsUV9oYWkwbeP/KPRFodijiPNvbAWV7h5xEm5xKibfWgV+mqaAnqR0etQMMmWmuRnN5uRaDMFcVxI=
-language: rust
+    - secure: MnwPQuVBtlqmHFtJnrMzKJrZch55lE5S0wW/7CgCDeN/BLJQ/RNjEhjSqvF74s5PjIeR2k8Tiwi0CN73wnmFd9sqwPyZKGw6W/u+mC3rboVgrFOhHSQ9d3J21/xits5G1At2GvBqK5mZ6KJoLzgcHycpir7Cayrft1v0wxugo8o=
 script:
   - cargo build --verbose
   - cargo test --verbose
   - cargo doc
-after_script:
-  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
+after_success: |
+  [ $TRAVIS_BRANCH = master ] &&
+  mv target/doc . &&
+  curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
