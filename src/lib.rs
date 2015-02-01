@@ -68,6 +68,15 @@ impl<T: Send> TaskPipe<T> {
     ///
     /// Received upstream task items, process them, and pass them along to
     /// downstream tasks.
+    /// ```
+    /// taskpipe::input(|tx: Sender<char>| {
+    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
+    /// }).pipe(|rx: Receiver<usize>, tx: Sender<bool>| {
+    ///     for c in rx.iter() {
+    ///         tx.send(c.is_uppercase());
+    ///     }
+    /// });
+    /// ```
     pub fn pipe<S: Send, F: FnOnce(Receiver<T>, Sender<S>)+Send>(self, task: F) -> TaskPipe<S> {
         let (tx, rx) = channel();
 
@@ -80,11 +89,38 @@ impl<T: Send> TaskPipe<T> {
 
     /// Finalize the pipeline, consuming any items.
     ///
-    /// This method joins the final task to the parent's thread, while receiving
-    /// any items that have made their way through the entire pipeline.
-    pub fn output<F: FnOnce(Receiver<T>)+Send>(self, task: F) {
+    /// This method dispatches and joins the final task to the parent's thread,
+    /// while receiving any items that have made their way through the entire
+    /// pipeline.
+    /// ```
+    /// taskpipe::input(|tx: Sender<char>| {
+    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
+    /// }).output(|tx: Sender<char>| {
+    ///     for c in rx.iter() {
+    ///         print!("{} ", c);
+    ///     }
+    /// });
+    /// ```
+    pub fn end<F: FnOnce(Receiver<T>)+Send>(self, task: F) {
         Thread::scoped(move || {
             task(self.rx);
         });
+    }
+
+    /// Finalize the pipeline without a thread, consuming any items.
+    ///
+    /// This method executes it's closure in the current thread without
+    /// spawning a sub-process.
+    /// ```
+    /// taskpipe::input(|tx: Sender<char>| {
+    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c); }
+    /// }).join(|tx: Sender<char>| {
+    ///     for c in rx.iter() {
+    ///         print!("{} ", c);
+    ///     }
+    /// });
+    /// ```
+    pub fn join<F: Fn(Receiver<T>)>(self, task: F) {
+        task(self.rx);
     }
 }

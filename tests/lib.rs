@@ -3,7 +3,7 @@ extern crate taskpipe;
 use std::sync::mpsc::{Receiver,Sender};
 
 #[test]
-fn it_works() {
+fn it_inputs_transforms_and_joins_to_main_all_items() {
     taskpipe::input(|tx: Sender<char>| {
         for c in "0123456789abcd".chars() {
             tx.send(c);
@@ -21,16 +21,17 @@ fn it_works() {
         }
     }).pipe(|rx: Receiver<usize>, tx: Sender<bool>| {
         for c in rx.iter() {
-            print!("{} ", c);
             if c % 2 == 0 {
                 tx.send(true);
             } else {
                 tx.send(false);
             }
         }
-    }).output(|rx: Receiver<bool>| {
+    }).join(|rx: Receiver<bool>| {
+        let mut count = 0;
         for c in rx.iter() {
-            print!("{} ", c);
+            count = count + 1;
         }
+        assert_eq!(count, 16);
     });
 }
