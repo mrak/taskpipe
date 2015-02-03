@@ -9,3 +9,4 @@ repository = "https://github.com/mrak/taskpipe.git"
 readme = "README.md"
 license = "MIT"
 keywords = ["concurrency","multithreaded","pipe","channel"]
+documentation = "https://mrak.github.io/taskpipe"
