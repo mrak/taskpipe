@@ -4,7 +4,7 @@ use std::sync::mpsc::{Receiver,Sender};
 
 #[test]
 fn it_inputs_transforms_and_joins_to_main_all_items() {
-    taskpipe::input(|tx: Sender<char>| {
+    let result = taskpipe::input(|tx: Sender<char>| {
         for c in "0123456789abcd".chars() {
             tx.send(c);
         }
@@ -27,11 +27,16 @@ fn it_inputs_transforms_and_joins_to_main_all_items() {
                 tx.send(false);
             }
         }
-    }).join(|rx: Receiver<bool>| {
+    }).end(|rx: Receiver<bool>| {
         let mut count = 0;
         for c in rx.iter() {
             count = count + 1;
         }
-        assert_eq!(count, 16);
-    });
+        count
+    }).join();
+
+    match result {
+        Ok(count) => assert_eq!(count, 16),
+        Err(_) => panic!("Thread did not exit successfully!")
+    }
 }

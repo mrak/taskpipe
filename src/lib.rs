@@ -3,7 +3,7 @@
 //! given a read channel as well as a write channel.
 
 use std::sync::mpsc::{Receiver,Sender,channel};
-use std::thread::Thread;
+use std::thread::{Thread,JoinGuard};
 
 /// A taskpipe continuation
 ///
@@ -98,44 +98,40 @@ impl<T: Send> TaskPipe<T> {
 
     /// Finalize the pipeline, consuming any items.
     ///
-    /// This method dispatches and joins the final task to the parent's thread,
-    /// while receiving any items that have made their way through the entire
+    /// This method dispatches and returns a Thread JoinGuard while the closure
+    /// receives any items that have made their way through the entire
     /// pipeline.
     ///
+    /// ## Example
     /// ```
     /// use std::sync::mpsc::{Receiver,Sender};
     ///
-    /// taskpipe::input(|tx: Sender<char>| {
-    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c).unwrap(); }
+    /// let guard = taskpipe::input(|tx: Sender<char>| {
+    ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() {
+    ///         tx.send(c).unwrap();
+    ///     }
     /// }).end(|rx: Receiver<char>| {
     ///     for c in rx.iter() {
     ///         print!("{} ", c);
     ///     }
     /// });
     /// ```
-    pub fn end<F: FnOnce(Receiver<T>)+Send>(self, task: F) {
-        Thread::scoped(move || {
-            task(self.rx);
-        });
-    }
-
-    /// Finalize the pipeline without a thread, consuming any items.
     ///
-    /// This method executes it's closure in the current thread without
-    /// spawning a sub-process.
-    ///
+    /// ## Example with result
     /// ```
-    /// use std::sync::mpsc::{Sender,Receiver};
+    /// use std::sync::mpsc::{Receiver,Sender};
     ///
-    /// taskpipe::input(|tx: Sender<char>| {
+    /// let result = taskpipe::input(|tx: Sender<char>| {
     ///     for c in "abcdefghijklmnopqrstuvwxyz".chars() { tx.send(c).unwrap(); }
-    /// }).join(|rx: Receiver<char>| {
+    /// }).end(|rx: Receiver<char>| {
     ///     for c in rx.iter() {
     ///         print!("{} ", c);
     ///     }
-    /// });
+    /// }).join();
     /// ```
-    pub fn join<F: Fn(Receiver<T>)>(self, task: F) {
-        task(self.rx);
+    pub fn end<'a, R: Send + 'a, F: FnOnce(Receiver<T>) -> R + Send>(self, task: F) -> JoinGuard<'a, R> {
+        Thread::scoped(move || {
+            task(self.rx)
+        })
     }
 }
