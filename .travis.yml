@@ -1,7 +1,7 @@
 language: rust
 env:
   global:
-    - secure: MnwPQuVBtlqmHFtJnrMzKJrZch55lE5S0wW/7CgCDeN/BLJQ/RNjEhjSqvF74s5PjIeR2k8Tiwi0CN73wnmFd9sqwPyZKGw6W/u+mC3rboVgrFOhHSQ9d3J21/xits5G1At2GvBqK5mZ6KJoLzgcHycpir7Cayrft1v0wxugo8o=
+    - secure: "YzQ5jG9zQKzkSlMRvPJFOdFYeYb5bmKRjZwF7P7UcRtVqsoV0MsUTwJjqcknhu6BCtoCOsc6DCJXs9hLUxj+Lj5ChX5C1MQbcT8NWbxvoQy+GK0ynSPTvEPRVMjZf78xdu9PtnfdMj2b4kn3tN2Ps5A8tsSTk1WqUm3zLjd1ztA="
 script:
   - cargo build --verbose
   - cargo test --verbose
@@ -12,4 +12,4 @@ after_success: |
   echo '<meta http-equiv=refresh content=0;url=taskpipe/index.html>' > target/doc/index.html &&
   sudo pip install ghp-import &&
   ghp-import -n target/doc &&
-  git push -fq https://${TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
