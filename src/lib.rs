@@ -3,7 +3,7 @@
 //! given a read channel as well as a write channel.
 
 use std::sync::mpsc::{Receiver,Sender,channel};
-use std::thread::{Thread,JoinGuard};
+use std::thread::{spawn,scoped,JoinGuard};
 
 /// A taskpipe continuation
 ///
@@ -31,7 +31,7 @@ pub struct TaskPipe<T: 'static + Send> {
 pub fn input<T: 'static + Send, F: 'static + FnOnce(Sender<T>)+Send>(task: F) -> TaskPipe<T> {
     let (tx, rx) = channel();
 
-    Thread::spawn(move || {
+    spawn(move || {
         task(tx);
     });
 
@@ -58,12 +58,12 @@ impl<T: Send> TaskPipe<T> {
         let (tx, rx) = channel();
         let tx2 = tx.clone();
 
-        Thread::spawn(move || {
+        spawn(move || {
             for message in self.rx.iter() {
                 tx2.send(message);
             };
         });
-        Thread::spawn(move || {
+        spawn(move || {
             task(tx);
         });
 
@@ -89,7 +89,7 @@ impl<T: Send> TaskPipe<T> {
     pub fn pipe<S: 'static + Send, F: 'static+FnOnce(Receiver<T>, Sender<S>)+Send>(self, task: F) -> TaskPipe<S> {
         let (tx, rx) = channel();
 
-        Thread::spawn(move || {
+        spawn(move || {
             task(self.rx, tx);
         });
 
@@ -130,7 +130,7 @@ impl<T: Send> TaskPipe<T> {
     /// }).join();
     /// ```
     pub fn end<'a, R: Send + 'a, F: 'static + FnOnce(Receiver<T>) -> R + Send>(self, task: F) -> JoinGuard<'a, R> {
-        Thread::scoped(move || {
+        scoped(move || {
             task(self.rx)
         })
     }
