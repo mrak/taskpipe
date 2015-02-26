@@ -9,7 +9,7 @@ use std::thread::{Thread,JoinGuard};
 ///
 /// This struct is not meant to be used directly. Instead, it the return type of other
 /// functions within this library
-pub struct TaskPipe<T: Send> {
+pub struct TaskPipe<T: 'static + Send> {
     /// The reading end of the previous task's channel
     rx: Receiver<T>
 }
@@ -28,7 +28,7 @@ pub struct TaskPipe<T: Send> {
 ///     }
 /// });
 /// ```
-pub fn input<T: Send, F: FnOnce(Sender<T>)+Send>(task: F) -> TaskPipe<T> {
+pub fn input<T: 'static + Send, F: 'static + FnOnce(Sender<T>)+Send>(task: F) -> TaskPipe<T> {
     let (tx, rx) = channel();
 
     Thread::spawn(move || {
@@ -54,7 +54,7 @@ impl<T: Send> TaskPipe<T> {
     ///     for c in "0123456789".chars() { tx.send(c).unwrap(); }
     /// });
     /// ```
-    pub fn input<F: FnOnce(Sender<T>)+Send>(self, task: F) -> TaskPipe<T> {
+    pub fn input<F: 'static + FnOnce(Sender<T>)+Send>(self, task: F) -> TaskPipe<T> {
         let (tx, rx) = channel();
         let tx2 = tx.clone();
 
@@ -86,7 +86,7 @@ impl<T: Send> TaskPipe<T> {
     ///     }
     /// });
     /// ```
-    pub fn pipe<S: Send, F: FnOnce(Receiver<T>, Sender<S>)+Send>(self, task: F) -> TaskPipe<S> {
+    pub fn pipe<S: 'static + Send, F: 'static+FnOnce(Receiver<T>, Sender<S>)+Send>(self, task: F) -> TaskPipe<S> {
         let (tx, rx) = channel();
 
         Thread::spawn(move || {
@@ -129,7 +129,7 @@ impl<T: Send> TaskPipe<T> {
     ///     }
     /// }).join();
     /// ```
-    pub fn end<'a, R: Send + 'a, F: FnOnce(Receiver<T>) -> R + Send>(self, task: F) -> JoinGuard<'a, R> {
+    pub fn end<'a, R: Send + 'a, F: 'static + FnOnce(Receiver<T>) -> R + Send>(self, task: F) -> JoinGuard<'a, R> {
         Thread::scoped(move || {
             task(self.rx)
         })

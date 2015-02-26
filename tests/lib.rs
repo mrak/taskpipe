@@ -12,14 +12,14 @@ fn it_inputs_transforms_and_joins_to_main_all_items() {
         tx.send('f');
     }).input(|tx: Sender<char>| {
         tx.send('e');
-    }).pipe(|rx: Receiver<char>, tx: Sender<usize>| {
+    }).pipe(|rx: Receiver<char>, tx: Sender<u32>| {
         for c in rx.iter() {
             match c.to_digit(16) {
                 Some(u) => tx.send(u),
                 None => continue
             };
         }
-    }).pipe(|rx: Receiver<usize>, tx: Sender<bool>| {
+    }).pipe(|rx: Receiver<u32>, tx: Sender<bool>| {
         for c in rx.iter() {
             if c % 2 == 0 {
                 tx.send(true);
@@ -35,8 +35,5 @@ fn it_inputs_transforms_and_joins_to_main_all_items() {
         count
     }).join();
 
-    match result {
-        Ok(count) => assert_eq!(count, 16),
-        Err(_) => panic!("Thread did not exit successfully!")
-    }
+    assert_eq!(result, 16);
 }
