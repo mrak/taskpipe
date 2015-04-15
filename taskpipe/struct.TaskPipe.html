@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `TaskPipe` struct in crate `taskpipe`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, TaskPipe">
+
+    <title>taskpipe::TaskPipe - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='index.html'>taskpipe</a></p><script>window.sidebarCurrent = {name: 'TaskPipe', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>taskpipe</a>::<wbr><a class='struct' href=''>TaskPipe</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-12' href='../src/taskpipe/lib.rs.html#12-15'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct TaskPipe&lt;T: 'static + <a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a>&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>A taskpipe continuation</p>
+
+<p>This struct is not meant to be used directly. Instead, it the return type of other
+functions within this library</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl&lt;T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a>&gt; <a class='struct' href='../taskpipe/struct.TaskPipe.html' title='taskpipe::TaskPipe'>TaskPipe</a>&lt;T&gt;</code></h3><div class='impl-items'><h4 id='method.input' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.input' class='fnname'>input</a>&lt;F: 'static + <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>(<a class='struct' href='http://doc.rust-lang.org/nightly/std/sync/mpsc/struct.Sender.html' title='std::sync::mpsc::Sender'>Sender</a>&lt;T&gt;) + <a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a>&gt;(self, task: F) -&gt; <a class='struct' href='../taskpipe/struct.TaskPipe.html' title='taskpipe::TaskPipe'>TaskPipe</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Insert additional items into the pipeline</p>
+
+<p>Items from the previous task will be passed through to the next task.
+Items produced by the given function will also be received by
+downstream tasks.</p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::<span class='ident'>Sender</span>;
+
+<span class='ident'>taskpipe</span>::<span class='ident'>input</span>(<span class='op'>|</span><span class='ident'>tx</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>char</span><span class='op'>&gt;</span><span class='op'>|</span> {
+    <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='string'>&quot;abcdefghijklmnopqrstuvwxyz&quot;</span>.<span class='ident'>chars</span>() { <span class='ident'>tx</span>.<span class='ident'>send</span>(<span class='ident'>c</span>).<span class='ident'>unwrap</span>(); }
+}).<span class='ident'>input</span>(<span class='op'>|</span><span class='ident'>tx</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>char</span><span class='op'>&gt;</span><span class='op'>|</span> {
+    <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='string'>&quot;0123456789&quot;</span>.<span class='ident'>chars</span>() { <span class='ident'>tx</span>.<span class='ident'>send</span>(<span class='ident'>c</span>).<span class='ident'>unwrap</span>(); }
+});
+</pre>
+</div><h4 id='method.pipe' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.pipe' class='fnname'>pipe</a>&lt;S: 'static + <a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a>, F: 'static + <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>(<a class='struct' href='http://doc.rust-lang.org/nightly/std/sync/mpsc/struct.Receiver.html' title='std::sync::mpsc::Receiver'>Receiver</a>&lt;T&gt;, <a class='struct' href='http://doc.rust-lang.org/nightly/std/sync/mpsc/struct.Sender.html' title='std::sync::mpsc::Sender'>Sender</a>&lt;S&gt;) + <a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a>&gt;(self, task: F) -&gt; <a class='struct' href='../taskpipe/struct.TaskPipe.html' title='taskpipe::TaskPipe'>TaskPipe</a>&lt;S&gt;</code></h4>
+<div class='docblock'><p>Transform or process pipeline items</p>
+
+<p>Received upstream task items, process them, and pass them along to
+downstream tasks.</p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::{<span class='ident'>Receiver</span>,<span class='ident'>Sender</span>};
+
+<span class='ident'>taskpipe</span>::<span class='ident'>input</span>(<span class='op'>|</span><span class='ident'>tx</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>char</span><span class='op'>&gt;</span><span class='op'>|</span> {
+    <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='string'>&quot;abcdefghijklmnopqrstuvwxyz&quot;</span>.<span class='ident'>chars</span>() { <span class='ident'>tx</span>.<span class='ident'>send</span>(<span class='ident'>c</span>).<span class='ident'>unwrap</span>(); }
+}).<span class='ident'>pipe</span>(<span class='op'>|</span><span class='ident'>rx</span>: <span class='ident'>Receiver</span><span class='op'>&lt;</span><span class='ident'>char</span><span class='op'>&gt;</span>, <span class='ident'>tx</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span><span class='op'>|</span> {
+    <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='ident'>rx</span>.<span class='ident'>iter</span>() {
+        <span class='ident'>tx</span>.<span class='ident'>send</span>(<span class='ident'>c</span>.<span class='ident'>is_uppercase</span>()).<span class='ident'>unwrap</span>();
+    }
+});
+</pre>
+</div><h4 id='method.end' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.end' class='fnname'>end</a>&lt;'a, R: <a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> + 'a, F: 'static + <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>(<a class='struct' href='http://doc.rust-lang.org/nightly/std/sync/mpsc/struct.Receiver.html' title='std::sync::mpsc::Receiver'>Receiver</a>&lt;T&gt;) -&gt; R + <a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a>&gt;(self, task: F) -&gt; <a class='struct' href='http://doc.rust-lang.org/nightly/std/thread/struct.JoinGuard.html' title='std::thread::JoinGuard'>JoinGuard</a>&lt;'a, R&gt;</code></h4>
+<div class='docblock'><p>Finalize the pipeline, consuming any items.</p>
+
+<p>This method dispatches and returns a Thread JoinGuard while the closure
+receives any items that have made their way through the entire
+pipeline.</p>
+
+<h2 id="example" class='section-header'><a
+                           href="#example">Example</a></h2><pre id='rust-example-rendered' class='rust '>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::{<span class='ident'>Receiver</span>,<span class='ident'>Sender</span>};
+
+<span class='kw'>let</span> <span class='ident'>guard</span> <span class='op'>=</span> <span class='ident'>taskpipe</span>::<span class='ident'>input</span>(<span class='op'>|</span><span class='ident'>tx</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>char</span><span class='op'>&gt;</span><span class='op'>|</span> {
+    <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='string'>&quot;abcdefghijklmnopqrstuvwxyz&quot;</span>.<span class='ident'>chars</span>() {
+        <span class='ident'>tx</span>.<span class='ident'>send</span>(<span class='ident'>c</span>).<span class='ident'>unwrap</span>();
+    }
+}).<span class='ident'>end</span>(<span class='op'>|</span><span class='ident'>rx</span>: <span class='ident'>Receiver</span><span class='op'>&lt;</span><span class='ident'>char</span><span class='op'>&gt;</span><span class='op'>|</span> {
+    <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='ident'>rx</span>.<span class='ident'>iter</span>() {
+        <span class='macro'>print</span><span class='macro'>!</span>(<span class='string'>&quot;{} &quot;</span>, <span class='ident'>c</span>);
+    }
+});
+</pre>
+
+<h2 id="example-with-result" class='section-header'><a
+                           href="#example-with-result">Example with result</a></h2><pre id='rust-example-rendered' class='rust '>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::{<span class='ident'>Receiver</span>,<span class='ident'>Sender</span>};
+
+<span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>taskpipe</span>::<span class='ident'>input</span>(<span class='op'>|</span><span class='ident'>tx</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>char</span><span class='op'>&gt;</span><span class='op'>|</span> {
+    <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='string'>&quot;abcdefghijklmnopqrstuvwxyz&quot;</span>.<span class='ident'>chars</span>() { <span class='ident'>tx</span>.<span class='ident'>send</span>(<span class='ident'>c</span>).<span class='ident'>unwrap</span>(); }
+}).<span class='ident'>end</span>(<span class='op'>|</span><span class='ident'>rx</span>: <span class='ident'>Receiver</span><span class='op'>&lt;</span><span class='ident'>char</span><span class='op'>&gt;</span><span class='op'>|</span> {
+    <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='ident'>rx</span>.<span class='ident'>iter</span>() {
+        <span class='macro'>print</span><span class='macro'>!</span>(<span class='string'>&quot;{} &quot;</span>, <span class='ident'>c</span>);
+    }
+}).<span class='ident'>join</span>();
+</pre>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "taskpipe";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>
