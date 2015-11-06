@@ -3,7 +3,7 @@
 //! given a read channel as well as a write channel.
 
 use std::sync::mpsc::{Receiver,Sender,channel};
-use std::thread::{spawn,scoped,JoinGuard};
+use std::thread::{spawn, JoinHandle};
 
 /// A taskpipe continuation
 ///
@@ -60,7 +60,7 @@ impl<T: Send> TaskPipe<T> {
 
         spawn(move || {
             for message in self.rx.iter() {
-                tx2.send(message);
+                tx2.send(message).unwrap();
             };
         });
         spawn(move || {
@@ -129,8 +129,13 @@ impl<T: Send> TaskPipe<T> {
     ///     }
     /// }).join();
     /// ```
-    pub fn end<'a, R: Send + 'a, F: 'static + FnOnce(Receiver<T>) -> R + Send>(self, task: F) -> JoinGuard<'a, R> {
-        scoped(move || {
+    // pub fn end<'a, R: Send + 'a, F: 'static + FnOnce(Receiver<T>) -> R + Send>(self, task: F) -> JoinHandle<R> {
+    //     spawn (move || {
+    //         task(self.rx)
+    //     });
+    // }
+    pub fn end<R: 'static + Send, F: 'static + FnOnce(Receiver<T>) -> R + Send>(self, task: F) -> JoinHandle<R> {
+        spawn (move || {
             task(self.rx)
         })
     }
